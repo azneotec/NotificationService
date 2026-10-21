@@ -1,0 +1,55 @@
+# Local Kafka for development (single-node KRaft, no ZooKeeper).
+# Based on https://www.conduktor.io/kafka/how-to-start-kafka-using-docker
+#
+# The apache/kafka image defaults to a single-node cluster whose listener is
+# advertised as localhost:9092, so the Spring app on the host can connect with
+# the default spring.kafka.bootstrap-servers (localhost:9092).
+services:
+  kafka:
+    image: apache/kafka:4.3.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "8090:8090" # Kafka UI (kafka-ui shares this container's network, see below)
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  # One-shot job: creates the topic NotificationService listens on, then exits.
+  # Shares the broker's network namespace because the broker advertises
+  # localhost:9092, which only resolves correctly from inside that namespace.
+  kafka-init:
+    image: apache/kafka:4.3.1
+    container_name: kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    network_mode: "service:kafka"
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic signup --partitions 1 --replication-factor 1
+
+  # Web UI: http://localhost:8090
+  # Shares the broker's network namespace for the same advertised-listener
+  # reason as kafka-init; its port is therefore published on the kafka service.
+  # Port 8090 avoids clashing with the Spring app on 8080.
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    network_mode: "service:kafka"
+    environment:
+      SERVER_PORT: 8090
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9092
+
+volumes:
+  kafka-data:
