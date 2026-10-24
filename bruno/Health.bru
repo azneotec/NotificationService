@@ -1,0 +1,21 @@
+meta {
+  name: Health
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/actuator/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq UP
+}
+
+docs {
+  Liveness probe. NotificationService has no other HTTP endpoint: it works by consuming Kafka, so the
+  Emails folder drives it through the topics. Use the `Local-9006` environment for the second instance.
+}

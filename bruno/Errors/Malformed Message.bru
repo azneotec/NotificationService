@@ -1,0 +1,30 @@
+meta {
+  name: Malformed Message
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{kafkaUiUrl}}/api/clusters/{{kafkaCluster}}/topics/order-notification/messages
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "partition": 0,
+    "keySerde": "String",
+    "valueSerde": "String",
+    "value": "this is not json"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Publishes a value that is not an email message. Kafka UI accepts it (200); NotificationService fails to parse it,
+  logs the error, retries per Spring Kafka's default error handler, then skips it. No email is sent and the
+  service keeps consuming: check the log and that Health is still UP.
+}

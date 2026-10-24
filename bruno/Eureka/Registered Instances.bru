@@ -1,0 +1,36 @@
+meta {
+  name: Registered Instances
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{eurekaUrl}}/eureka/apps/NOTIFICATION-SERVICE
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("notification-service is registered, one entry per running instance", function () {
+    const instance = res.body.application.instance;
+    const instances = Array.isArray(instance) ? instance : [instance];
+    expect(instances.length).to.be.at.least(1);
+    instances.forEach(i => {
+      expect(i.app).to.equal("NOTIFICATION-SERVICE");
+      expect(["8006", "9006"]).to.include(String(i.port["$"]));
+    });
+  });
+}
+
+docs {
+  The Eureka server must be running (`make eureka`). With `make notification` both instances (8006 and 9006)
+  appear; Eureka's registry view can lag about 30 seconds behind a start or stop. 404 means none is registered.
+}

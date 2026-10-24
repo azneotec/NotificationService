@@ -37,6 +37,10 @@ make notification-1 GMAIL_PASSWORD=... # just one instance (notification-2 for :
 
 This directory's `Makefile` runs the service on its own (`make help` lists the targets): `make up` starts Kafka from `docker-compose.yml` and runs the app on :8006 with `.env` loaded, `SERVER_PORT=9006 make run` starts a second instance, and `make docker-run` builds and runs the image. Don't use `make infra-up` while the root stack is up: both bind Kafka's 9092.
 
+### Bruno collection
+
+`bruno/` holds a [Bruno](https://www.usebruno.com) collection (open the folder in Bruno; environments `Local` for :8006 and `Local-9006` for :9006). The service has no API beyond `/actuator/health`, so besides **Health** and the **Eureka** registration check, the **Emails** requests publish `signup`, `password-reset` and `order-notification` messages through Kafka UI (`http://localhost:8090`) and the service emails them. Set `recipient` in the environment to a mailbox you own: those requests send real mail.
+
 ### Run in Docker
 
 The `Dockerfile` builds and runs only this service; Kafka and Eureka stay outside. `localhost` inside the container is the container itself, so override the addresses (`host.docker.internal` reaches services published on the host):

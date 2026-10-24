@@ -1,0 +1,28 @@
+meta {
+  name: Welcome Email
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{kafkaUiUrl}}/api/clusters/{{kafkaCluster}}/topics/signup/messages
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "partition": 0,
+    "keySerde": "String",
+    "valueSerde": "String",
+    "value": "{\"to\":\"{{recipient}}\",\"from\":\"{{sender}}\",\"subject\":\"Welcome to scaler\",\"body\":\"Hey {{recipientName}}, have a nice learning experience\"}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Publishes what UserAuthService sends on signup to the `signup` topic.
+}

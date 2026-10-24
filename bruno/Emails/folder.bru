@@ -1,0 +1,16 @@
+meta {
+  name: Emails
+  seq: 3
+}
+
+docs {
+  NotificationService has no API for sending mail: each request here publishes a message to a Kafka topic through
+  Kafka UI's REST API (`{{kafkaUiUrl}}`, started with the compose stack), and the service emails it.
+
+  Run `make notification GMAIL_PASSWORD=...` (or `make up GMAIL_PASSWORD=...`) first. Set `recipient` in the
+  environment to a mailbox you own: these send real email through Gmail. `sender` must be the Gmail account the
+  password belongs to, because the service logs in to SMTP as the message's `from`.
+
+  A 200 only means the message reached the topic; whether the email went out is in the service log
+  (`.run/notification-1.log`) and the recipient's inbox.
+}

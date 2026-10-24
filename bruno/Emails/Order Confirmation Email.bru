@@ -1,0 +1,28 @@
+meta {
+  name: Order Confirmation Email
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{kafkaUiUrl}}/api/clusters/{{kafkaCluster}}/topics/order-notification/messages
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "partition": 0,
+    "keySerde": "String",
+    "valueSerde": "String",
+    "value": "{\"to\":\"{{recipient}}\",\"from\":\"{{sender}}\",\"subject\":\"Your order is confirmed\",\"body\":\"Thanks {{recipientName}}, we have received your order.\"}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Publishes an order email to the `order-notification` topic, the one OrderManagementService (order updates) and PaymentService (receipts) use.
+}
