@@ -13,13 +13,18 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import java.util.Properties;
 
+/**
+ * Sends the email described by each message on the {@code signup} (welcome), {@code password-reset} and
+ * {@code order-notification} (order confirmation and delivery updates) topics. The producer (UserAuthService
+ * or OrderManagementService) decides the recipient, subject and body; this class only delivers it.
+ */
 @Component
-public class KafkaConsumerWelcomeEmailClient {
+public class KafkaConsumerEmailClient {
 
     private final ObjectMapper objectMapper;
     private final String mailPassword;
 
-    public KafkaConsumerWelcomeEmailClient(
+    public KafkaConsumerEmailClient(
             ObjectMapper objectMapper,
             @Value("${notification.mail.password}") String mailPassword
     ) {
@@ -27,7 +32,7 @@ public class KafkaConsumerWelcomeEmailClient {
         this.mailPassword = mailPassword;
     }
 
-    @KafkaListener(topics = "signup", groupId = "emailService")
+    @KafkaListener(topics = {"signup", "password-reset", "order-notification"}, groupId = "emailService")
     public void sendEmail(String message) {
         try {
             EmailDto emailDto = objectMapper.readValue(message, EmailDto.class);
@@ -47,7 +52,7 @@ public class KafkaConsumerWelcomeEmailClient {
             };
             Session session = Session.getInstance(props, auth);
 
-            EmailUtil.sendEmail(session, emailDto.getTo(),"TLSEmail Testing Subject", "TLSEmail Testing Body");
+            EmailUtil.sendEmail(session, emailDto.getTo(), emailDto.getSubject(), emailDto.getBody());
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e.getMessage());

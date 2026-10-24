@@ -20,7 +20,7 @@ services:
       retries: 10
       start_period: 15s
 
-  # One-shot job: creates the topic NotificationService listens on, then exits.
+  # One-shot job: creates the topics NotificationService listens on (signup, password-reset, order-notification), then exits.
   # Shares the broker's network namespace because the broker advertises
   # localhost:9092, which only resolves correctly from inside that namespace.
   kafka-init:
@@ -33,7 +33,10 @@ services:
     restart: "no"
     entrypoint: ["/bin/sh", "-c"]
     command:
-      - /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic signup --partitions 1 --replication-factor 1
+      - >-
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic signup --partitions 1 --replication-factor 1 &&
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic password-reset --partitions 1 --replication-factor 1 &&
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic order-notification --partitions 1 --replication-factor 1
 
   # Web UI: http://localhost:8090
   # Shares the broker's network namespace for the same advertised-listener
