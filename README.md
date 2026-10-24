@@ -33,6 +33,10 @@ make notification GMAIL_PASSWORD=...   # :8006 and :9006, both registered as not
 make notification-1 GMAIL_PASSWORD=... # just one instance (notification-2 for :9006)
 ```
 
+### Standalone
+
+This directory's `Makefile` runs the service on its own (`make help` lists the targets): `make up` starts Kafka from `docker-compose.yml` and runs the app on :8006 with `.env` loaded, `SERVER_PORT=9006 make run` starts a second instance, and `make docker-run` builds and runs the image. Don't use `make infra-up` while the root stack is up: both bind Kafka's 9092.
+
 ### Run in Docker
 
 The `Dockerfile` builds and runs only this service; Kafka and Eureka stay outside. `localhost` inside the container is the container itself, so override the addresses (`host.docker.internal` reaches services published on the host):
