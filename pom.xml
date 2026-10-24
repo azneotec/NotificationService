@@ -60,6 +60,13 @@
             <version>3.3.14</version>
             <scope>compile</scope>
         </dependency>
+        <!-- Spring Cloud 2025.0.x line, the one that supports Spring Boot 3.5 (the other services are on Boot 3.3 / 4.1.x). -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>4.3.0</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
